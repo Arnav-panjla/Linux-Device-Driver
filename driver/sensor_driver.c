@@ -7,7 +7,9 @@
 #include <linux/cdev.h>
 #include <linux/device.h>
 #include <linux/timer.h>
+#include <linux/sched.h>
 #include <linux/jiffies.h>
+#include <linux/spinlock.h>
 
 #define DEVICE_NAME "my_sensor"
 #define CLASS_NAME  "sensor_class"
@@ -30,37 +32,49 @@ static void sensor_timer_callback(struct timer_list *t)
 {
     unsigned long flags;
     spin_lock_irqsave(&lock, flags);
-    snprintf(sensor_data, SENSOR_BUFFER_SIZE, "SensorValue: %d\n", jiffies % 1000);
+    snprintf(sensor_data, SENSOR_BUFFER_SIZE, "SensorValue: %lu\n", jiffies % 1000);  // ✅ Fixed %ln -> %lu
     data_ready = 1;
     spin_unlock_irqrestore(&lock, flags);
 
     mod_timer(&sensor_timer, jiffies + msecs_to_jiffies(SENSOR_INTERVAL_MS));
 }
 
-static ssize_t sensor_read(struct file *filep, char *buffer, size_t len, loff_t *offset)
+static ssize_t sensor_read(struct file *filep, char __user *buffer, size_t len, loff_t *offset)
 {
     ssize_t ret;
     unsigned long flags;
+    size_t data_len;
 
     spin_lock_irqsave(&lock, flags);
 
     if (!data_ready) {
         spin_unlock_irqrestore(&lock, flags);
-        return 0; // No new data yet
+        return 0;  // No data to read
     }
 
-    if (len > strlen(sensor_data))
-        len = strlen(sensor_data);
+    data_len = strlen(sensor_data);
 
-    if (copy_to_user(buffer, sensor_data, len)) {
+    if (*offset >= data_len) {
+        // EOF
+        spin_unlock_irqrestore(&lock, flags);
+        return 0;
+    }
+
+    if (len > data_len - *offset)
+        len = data_len - *offset;
+
+    if (copy_to_user(buffer, sensor_data + *offset, len)) {
         spin_unlock_irqrestore(&lock, flags);
         return -EFAULT;
     }
 
+    *offset += len;
     data_ready = 0;
+
     spin_unlock_irqrestore(&lock, flags);
     return len;
 }
+
 
 static int sensor_open(struct inode *inodep, struct file *filep)
 {
@@ -85,7 +99,6 @@ static int __init sensor_init(void)
 
     spin_lock_init(&lock);
 
-    // Allocate major number
     if (alloc_chrdev_region(&dev, 0, 1, DEVICE_NAME) < 0) {
         printk(KERN_ALERT "Sensor: Failed to allocate major number\n");
         return -1;
@@ -99,7 +112,7 @@ static int __init sensor_init(void)
         return -1;
     }
 
-    sensor_class = class_create(THIS_MODULE, CLASS_NAME);
+    sensor_class = class_create(CLASS_NAME);  // ✅ Corrected: only pass class name
     if (IS_ERR(sensor_class)) {
         cdev_del(&sensor_cdev);
         unregister_chrdev_region(dev, 1);
@@ -126,7 +139,8 @@ static void __exit sensor_exit(void)
 {
     dev_t dev = MKDEV(major, 0);
 
-    del_timer_sync(&sensor_timer);
+    // extern void del_timer_sync(struct timer_list *timer); 
+    try_to_del_timer_sync(&sensor_timer);
     device_destroy(sensor_class, dev);
     class_destroy(sensor_class);
     cdev_del(&sensor_cdev);
