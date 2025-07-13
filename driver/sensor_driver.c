@@ -22,6 +22,10 @@ static int my_module_init(void) {
 
     printk("initializing proc entry\n");
     proc_entry = proc_create("my_dummy_sensor", 0, NULL, &my_proc_ops);
+    if (proc_entry == NULL) {
+        printk(KERN_ERR "Failed to create proc entry\n");
+        return -1l
+    }
     printk("Proc entry created at /proc/my_dummy_sensor\n");
 
     return 0;
