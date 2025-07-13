@@ -1,1 +1,0 @@
-savedcmd_sensor_driver.ko := ld -r -m elf_x86_64 -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T /usr/lib/modules/6.15.6-zen1-1-zen/build/scripts/module.lds -o sensor_driver.ko sensor_driver.o sensor_driver.mod.o .module-common.o
