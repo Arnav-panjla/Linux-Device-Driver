@@ -1066,51 +1066,6 @@ deps_sensor_driver.o := \
     $(wildcard include/config/UNWINDER_ORC) \
   /usr/lib/modules/6.15.6-zen1-1-zen/build/include/asm-generic/module.h \
     $(wildcard include/config/HAVE_MOD_ARCH_SPECIFIC) \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/cdev.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/device.h \
-    $(wildcard include/config/GENERIC_MSI_IRQ) \
-    $(wildcard include/config/ENERGY_MODEL) \
-    $(wildcard include/config/PINCTRL) \
-    $(wildcard include/config/ARCH_HAS_DMA_OPS) \
-    $(wildcard include/config/DMA_DECLARE_COHERENT) \
-    $(wildcard include/config/DMA_CMA) \
-    $(wildcard include/config/SWIOTLB) \
-    $(wildcard include/config/SWIOTLB_DYNAMIC) \
-    $(wildcard include/config/ARCH_HAS_SYNC_DMA_FOR_DEVICE) \
-    $(wildcard include/config/ARCH_HAS_SYNC_DMA_FOR_CPU) \
-    $(wildcard include/config/ARCH_HAS_SYNC_DMA_FOR_CPU_ALL) \
-    $(wildcard include/config/DMA_OPS_BYPASS) \
-    $(wildcard include/config/DMA_NEED_SYNC) \
-    $(wildcard include/config/IOMMU_DMA) \
-    $(wildcard include/config/PM_SLEEP) \
-    $(wildcard include/config/OF) \
-    $(wildcard include/config/DEVTMPFS) \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/dev_printk.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/energy_model.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/sched/cpufreq.h \
-    $(wildcard include/config/CPU_FREQ) \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/sched/topology.h \
-    $(wildcard include/config/SCHED_CLUSTER) \
-    $(wildcard include/config/SCHED_MC) \
-    $(wildcard include/config/CPU_FREQ_GOV_SCHEDUTIL) \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/sched/idle.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/sched/sd_flags.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/ioport.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/klist.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/pm.h \
-    $(wildcard include/config/VT_CONSOLE_SLEEP) \
-    $(wildcard include/config/CXL_SUSPEND) \
-    $(wildcard include/config/PM) \
-    $(wildcard include/config/PM_CLK) \
-    $(wildcard include/config/PM_GENERIC_DOMAINS) \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/device/bus.h \
-    $(wildcard include/config/ACPI) \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/device/class.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/device/devres.h \
-    $(wildcard include/config/HAS_IOMEM) \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/device/driver.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/arch/x86/include/asm/device.h \
-  /usr/lib/modules/6.15.6-zen1-1-zen/build/include/linux/pm_wakeup.h \
 
 sensor_driver.o: $(deps_sensor_driver.o)
 
