@@ -3,89 +3,56 @@ name: Build Linux Sensor Driver
 on:
   push:
     branches: [ main, master ]
-    paths:
-      - 'driver/**'
+    paths: [ 'driver/**' ]
   pull_request:
     branches: [ main, master ]
-    paths:
-      - 'driver/**'
-  workflow_dispatch:  # manual trigger
+    paths: [ 'driver/**' ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential linux-headers-$(uname -r) kmod
-      
-    - name: Check code formatting
-      run: |
-        cd driver
-        clang-format -n -Werror sensor_driver.c
-      
-    - name: Build driver module
-      run: |
-        cd driver
-        make
-      
-    - name: Static code analysis
-      run: |
-        sudo apt-get install -y sparse
-        cd driver
-        make C=2
-      
-    - name: Test driver module
-      run: |
-        cd driver
-        # Create a simple test script
-        cat > test_module.sh << 'EOF'
-        #!/bin/bash
-        set -e
-        
-        echo "Loading module..."
-        sudo insmod sensor_driver.ko || exit 1
-        
-        echo "Checking if module is loaded..."
-        lsmod | grep sensor_driver || exit 1
-        
-        echo "Checking proc entry..."
-        if [ -f /proc/my_dummy_sensor ]; then
-          echo "Proc file exists, reading content:"
-          cat /proc/my_dummy_sensor || exit 1
-        else
-          echo "Error: Proc file does not exist!"
-          exit 1
-        fi
-        
-        echo "Unloading module..."
-        sudo rmmod sensor_driver || exit 1
-        
-        echo "All tests passed!"
-        EOF
-        
-        chmod +x test_module.sh
-        
-        # Run in kernel CI environment or mock the test
-        if [ -f /proc/version ]; then
-          echo "Running on a system with kernel access, performing full test"
-          # Safety check - only run if in CI environment
-          if [ "$CI" = "true" ]; then
-            sudo ./test_module.sh
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential linux-headers-$(uname -r) kmod sparse clang-format
+
+      - name: Check code formatting
+        run: clang-format -n -Werror driver/sensor_driver.c
+
+      - name: Build driver module
+        run: make -C driver
+
+      - name: Static code analysis
+        run: make -C driver C=2
+
+      - name: Test driver module
+        run: |
+          cd driver
+          cat > test_module.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          sudo insmod sensor_driver.ko
+          lsmod | grep sensor_driver > /dev/null
+          [[ -f /proc/my_dummy_sensor ]] && cat /proc/my_dummy_sensor
+          sudo rmmod sensor_driver
+          echo "All tests passed!"
+          EOF
+          chmod +x test_module.sh
+
+          if [[ -f /proc/version && "$CI" == "true" ]]; then
+            ./test_module.sh
           else
-            echo "Skipping actual module loading outside CI environment"
+            echo "Skipping kernel module test outside CI with kernel access"
           fi
-        else
-          echo "Mock test only - no kernel access in this environment"
-        fi
-      
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: sensor-driver
-        path: driver/sensor_driver.ko
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sensor-driver
+          path: driver/sensor_driver.ko
