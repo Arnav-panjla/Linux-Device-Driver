@@ -14,7 +14,7 @@ MODULE_AUTHOR("Arnav Panjla");
 MODULE_DESCRIPTION("A GPIO driver module for raspberry pi with LED control");
 MODULE_VERSION("1.0");
 
-#define GPIO_PIN 17
+#define GPIO_PIN 13
 #define DEVICE_NAME "gpio_led"
 #define CLASS_NAME "gpio_class"
 
@@ -25,6 +25,7 @@ static struct cdev gpio_cdev;
 static bool led_state = false;
 static struct timer_list blink_timer;
 static bool blink_mode = false;
+static int major_number;
 
 static int gpio_open(struct inode *inode, struct file *file);
 static int gpio_release(struct inode *inode, struct file *file);
